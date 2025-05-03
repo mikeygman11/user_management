@@ -1,8 +1,8 @@
-"""add role change log
+"""initial migration
 
-Revision ID: ec633f6b72ce
-Revises: 25d814bc83ed
-Create Date: 2025-05-03 18:25:03.367258
+Revision ID: 0ffc943073f2
+Revises: 
+Create Date: 2025-05-03 20:32:58.011365
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'ec633f6b72ce'
-down_revision: Union[str, None] = '25d814bc83ed'
+revision: str = '0ffc943073f2'
+down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
