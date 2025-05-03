@@ -182,13 +182,16 @@ class UserService:
         user = await cls.get_by_id(session, user_id)
         if user and user.verification_token == token:
             user.email_verified = True
-            user.verification_token = None  # Clear the token once used
-            user.role = UserRole.AUTHENTICATED
+            user.verification_token = None
+
+            # Only upgrade role if the user is ANONYMOUS
+            if user.role == UserRole.ANONYMOUS:
+                user.role = UserRole.AUTHENTICATED
+
             session.add(user)
             await session.commit()
             return True
         return False
-
     @classmethod
     async def count(cls, session: AsyncSession) -> int:
         """
