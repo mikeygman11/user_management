@@ -38,3 +38,14 @@ async def test_admin_cannot_change_own_role(admin_token, admin_user, async_clien
     )
     assert res.status_code == 400
     assert res.json()["detail"] == "Admins cannot change their own role" #admins should not be able to change role"
+
+@pytest.mark.asyncio
+async def test_update_user_role_invalid_role(admin_token, create_user, async_client: AsyncClient):
+    user = await create_user(role=UserRole.AUTHENTICATED)
+    res = await async_client.put(
+        f"/users/{user.id}/role",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"new_role": "GODMODE"}  # invalid role
+    )
+    assert res.status_code == 400
+    assert res.json()["detail"] == "Invalid role name"
