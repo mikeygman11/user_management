@@ -15,6 +15,7 @@ from uuid import UUID
 from app.services.email_service import EmailService
 from app.models.user_model import UserRole
 import logging
+from fastapi import HTTPException, status
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -199,3 +200,16 @@ class UserService:
             await session.commit()
             return True
         return False
+
+    @classmethod
+    async def update_role(cls, session: AsyncSession, user_id: UUID, new_role: UserRole, changed_by: UUID) -> Optional[User]:
+        user = await cls.get_by_id(session, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Optionally log the role change for audit purposes (you can expand this later)
+        user.role = new_role
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        return user

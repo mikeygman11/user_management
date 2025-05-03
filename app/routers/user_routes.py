@@ -21,7 +21,7 @@ Key Highlights:
 from builtins import dict, int, len, str
 from datetime import timedelta
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Response, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Request, Body
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_current_user, get_db, get_email_service, require_role
@@ -33,6 +33,8 @@ from app.services.jwt_service import create_access_token
 from app.utils.link_generation import create_user_links, generate_pagination_links
 from app.dependencies import get_settings
 from app.services.email_service import EmailService
+from app.models.user_model import UserRole
+from app.services.user_service import UserService
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 settings = get_settings()
@@ -245,3 +247,28 @@ async def verify_email(user_id: UUID, token: str, db: AsyncSession = Depends(get
     if await UserService.verify_email_with_token(db, user_id, token):
         return {"message": "Email verified successfully"}
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired verification token")
+
+
+@router.put("/users/{user_id}/role", tags=["User Management Requires (Admin Role)"])
+async def update_user_role(
+    user_id: UUID,
+    new_role: str = Body(..., embed=True),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_role(["ADMIN"]))
+):
+    try:
+        role_enum = UserRole[new_role.upper()]
+    except KeyError:
+        raise HTTPException(status_code=400, detail="Invalid role name")
+
+    if str(user_id) == current_user["user_id"]:
+        raise HTTPException(status_code=400, detail="Admins cannot change their own role")
+
+    updated_user = await UserService.update_role(
+        db, user_id=user_id, new_role=role_enum, changed_by=UUID(current_user["user_id"])
+    )
+
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"message": f"User role updated to {role_enum.name}"}
