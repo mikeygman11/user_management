@@ -1,14 +1,14 @@
-from app.database import Base
-from sqlalchemy import Column, DateTime, Enum as SQLEnum
+from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from app.models.user_model import UserRole
-import uuid
-from datetime import datetime
+from sqlalchemy.sql import func
+from app.db.base_class import Base
 
 class RoleChangeLog(Base):
-    __tablename__ = "role_change_log"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), nullable=False)
+    __tablename__ = "role_change_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     changed_by = Column(UUID(as_uuid=True), nullable=False)
-    new_role = Column(SQLEnum(UserRole), nullable=False)
-    changed_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    target_user_id = Column(UUID(as_uuid=True), nullable=False)
+    old_role = Column(String(50))
+    new_role = Column(String(50))
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
