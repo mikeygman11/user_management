@@ -199,3 +199,26 @@ class UserService:
             await session.commit()
             return True
         return False
+
+@classmethod
+async def update_role(cls, session: AsyncSession, user_id: UUID, new_role: UserRole, changed_by: UUID) -> Optional[User]:
+    user = await cls.get_by_id(session, user_id)
+    if not user:
+        return None
+
+    user.role = new_role
+    user.updated_at = datetime.now(timezone.utc)
+    session.add(user)
+
+    # Optional: log the role change
+    from app.models.role_change_log_model import RoleChangeLog  # if logging enabled
+    log_entry = RoleChangeLog(
+        user_id=user_id,
+        changed_by=changed_by,
+        new_role=new_role,
+        changed_at=datetime.now(timezone.utc)
+    )
+    session.add(log_entry)
+
+    await session.commit()
+    return user
