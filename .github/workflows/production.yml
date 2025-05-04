@@ -26,7 +26,7 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL: postgresql+asyncpg://user:password@localhost:5432/myappdb
       SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
       SMTP_PORT: ${{ secrets.SMTP_PORT }}
       SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
@@ -47,10 +47,11 @@ jobs:
           pip install alembic pytest pytest-cov pylint
 
       - name: Wait for PostgreSQL to be ready
-        run: |
-          until pg_isready -h localhost -U user -d myappdb; do sleep 1; done
+        run: until pg_isready -h localhost -U user -d myappdb; do sleep 1; done
 
       - name: Run Alembic migrations
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/myappdb
         run: alembic upgrade head
 
       - name: Run pylint
