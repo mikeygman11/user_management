@@ -3,8 +3,9 @@ import sqlalchemy as sa
 import uuid
 
 # revision identifiers, used by Alembic.
-revision = 'your_revision_id'
-down_revision = 'previous_revision_id'
+
+revision = "abc12345def6"  # Unique ID for this migration (can be anything unique)
+down_revision = "0ffc943073f2"  # The revision ID of the last successful migration
 branch_labels = None
 depends_on = None
 
