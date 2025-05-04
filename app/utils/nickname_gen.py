@@ -1,5 +1,6 @@
-from builtins import str
+"""App to randomly generate nicknames to avoid dupes"""
 import random
+from builtins import str
 
 
 def generate_nickname() -> str:

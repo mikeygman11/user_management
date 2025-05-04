@@ -1,12 +1,19 @@
-from sqlalchemy import Column, String, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.sql import func
-from app.database import Base
+"""DB model for changing user roles"""
+# pylint: disable=not-callable
 
 from uuid import uuid4
 
+from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql import func
+
+from app.database import Base
+
 class RoleChangeLog(Base):
-    __tablename__ = "role_change_logs" #had to create UUID and match them with the new endpoint
+    """Class that defines Role Change Log"""
+    __tablename__ = (
+        "role_change_logs"
+    )  # had to create UUID and match them with the new endpoint
 
     id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
     changed_by = Column(UUID(as_uuid=True), nullable=False)

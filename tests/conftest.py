@@ -12,48 +12,49 @@ Fixtures:
 - `initialize_database`: Prepares the database at the session start.
 - `setup_database`: Sets up and tears down the database before and after each test.
 """
+# pylint: disable=redefined-outer-name
 
 # Standard library imports
 from builtins import Exception, range, str
 from datetime import timedelta
-from unittest.mock import AsyncMock, patch
-from uuid import uuid4
+from unittest.mock import AsyncMock
 
 # Third-party imports
 import pytest
-from fastapi.testclient import TestClient
-from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, scoped_session
 from faker import Faker
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 
+from alembic import command
+from alembic.config import Config
+from app.database import Base, Database
+from app.dependencies import get_db, get_settings
 # Application-specific imports
 from app.main import app
-from app.database import Base, Database
 from app.models.user_model import User, UserRole
-from app.dependencies import get_db, get_settings
-from app.utils.security import hash_password
-from app.utils.template_manager import TemplateManager
 from app.services.email_service import EmailService
 from app.services.jwt_service import create_access_token
 from app.services.user_service import UserService
-from unittest.mock import AsyncMock
-from alembic.config import Config
-from alembic import command
-from pathlib import Path
-import os
+from app.utils.security import hash_password
+from app.utils.template_manager import TemplateManager
 
 fake = Faker()
 
 settings = get_settings()
-TEST_DATABASE_URL = settings.database_url.replace("postgresql://", "postgresql+asyncpg://")
+TEST_DATABASE_URL = settings.database_url.replace(
+    "postgresql://", "postgresql+asyncpg://"
+)
 engine = create_async_engine(TEST_DATABASE_URL, echo=settings.debug)
-AsyncTestingSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+AsyncTestingSessionLocal = sessionmaker(
+    engine, class_=AsyncSession, expire_on_commit=False
+)
 AsyncSessionScoped = scoped_session(AsyncTestingSessionLocal)
 
 
 @pytest.fixture
 def email_service():
+    """Set up email"""
     # Assuming the TemplateManager does not need any arguments for initialization
     template_manager = TemplateManager()
     email_service = EmailService(template_manager=template_manager)
@@ -63,6 +64,7 @@ def email_service():
 # this is what creates the http client for your api tests
 @pytest.fixture(scope="function")
 async def async_client(db_session):
+    """Server"""
     async with AsyncClient(app=app, base_url="http://testserver") as client:
         app.dependency_overrides[get_db] = lambda: db_session
         try:
@@ -70,34 +72,42 @@ async def async_client(db_session):
         finally:
             app.dependency_overrides.clear()
 
+
 @pytest.fixture(scope="session", autouse=True)
 def initialize_database():
+    """Initial db"""
     try:
         Database.initialize(settings.database_url)
     except Exception as e:
         pytest.fail(f"Failed to initialize the database: {str(e)}")
 
+
 # this function setup and tears down (drops tales) for each test function, so you have a clean database for each test.
 @pytest.fixture(scope="function", autouse=True)
 async def setup_database():
+    """Database set up"""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
     async with engine.begin() as conn:
         # you can comment out this line during development if you are debugging a single test
-         await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
+
 
 @pytest.fixture(scope="function")
 async def db_session(setup_database):
+    """Database session set up"""
     async with AsyncSessionScoped() as session:
         try:
             yield session
         finally:
             await session.close()
 
+
 @pytest.fixture(scope="function")
 async def locked_user(db_session):
+    """Define locked"""
     unique_email = fake.email()
     user_data = {
         "nickname": fake.user_name(),
@@ -115,8 +125,10 @@ async def locked_user(db_session):
     await db_session.commit()
     return user
 
+
 @pytest.fixture(scope="function")
 async def user(db_session):
+    """User create"""
     user_data = {
         "nickname": fake.user_name(),
         "first_name": fake.first_name(),
@@ -132,8 +144,10 @@ async def user(db_session):
     await db_session.commit()
     return user
 
+
 @pytest.fixture(scope="function")
 async def verified_user(db_session):
+    """Test verified"""
     user_data = {
         "nickname": fake.user_name(),
         "first_name": fake.first_name(),
@@ -149,8 +163,10 @@ async def verified_user(db_session):
     await db_session.commit()
     return user
 
+
 @pytest.fixture(scope="function")
 async def unverified_user(db_session):
+    """Test unverified"""
     user_data = {
         "nickname": fake.user_name(),
         "first_name": fake.first_name(),
@@ -166,8 +182,10 @@ async def unverified_user(db_session):
     await db_session.commit()
     return user
 
+
 @pytest.fixture(scope="function")
 async def users_with_same_role_50_users(db_session):
+    """Recreating users"""
     users = []
     used_nicknames = set()
 
@@ -194,8 +212,10 @@ async def users_with_same_role_50_users(db_session):
     await db_session.commit()
     return users
 
+
 @pytest.fixture
 async def admin_user(db_session: AsyncSession):
+    """Admin user"""
     user = User(
         nickname="admin_user",
         email="admin@example.com",
@@ -209,8 +229,10 @@ async def admin_user(db_session: AsyncSession):
     await db_session.commit()
     return user
 
+
 @pytest.fixture
 async def manager_user(db_session: AsyncSession):
+    """Manager user"""
     user = User(
         nickname="manager_john",
         first_name="John",
@@ -224,26 +246,33 @@ async def manager_user(db_session: AsyncSession):
     await db_session.commit()
     return user
 
+
 # Configure a fixture for each type of user role you want to test
 @pytest.fixture(scope="function")
 def admin_token(admin_user):
-    # Assuming admin_user has an 'id' and 'role' attribute
+    """Admin token create"""
     token_data = {"sub": str(admin_user.id), "role": admin_user.role.name}
     return create_access_token(data=token_data, expires_delta=timedelta(minutes=30))
 
+
 @pytest.fixture(scope="function")
 def manager_token(manager_user):
+    """Manager tokens"""
     token_data = {"sub": str(manager_user.id), "role": manager_user.role.name}
     return create_access_token(data=token_data, expires_delta=timedelta(minutes=30))
 
+
 @pytest.fixture(scope="function")
 def user_token(user):
+    """Assign token"""
     token_data = {"sub": str(user.id), "role": user.role.name}
     return create_access_token(data=token_data, expires_delta=timedelta(minutes=30))
 
+
 @pytest.fixture
 def email_service():
-    if settings.send_real_mail == 'true':
+    """Email service"""
+    if settings.send_real_mail == "true":
         # Return the real email service when specifically testing email functionality
         return EmailService()
     else:
@@ -252,16 +281,17 @@ def email_service():
         mock_service.send_verification_email.return_value = None
         mock_service.send_user_email.return_value = None
         return mock_service
-    
+
 
 @pytest.fixture
 async def create_user(db_session):
+    """Create user function"""
     async def _create_user(
         email: str = "test@example.com",
         password: str = "SecurePass123!",
         nickname: str = "testuser",
         role: UserRole = UserRole.AUTHENTICATED,
-        email_verified: bool = True
+        email_verified: bool = True,
     ):
         # Mock the email service with no-op behavior
         mock_email_service = AsyncMock()
@@ -272,7 +302,7 @@ async def create_user(db_session):
             "password": password,
             "nickname": nickname,
             "role": role,
-            "email_verified": email_verified
+            "email_verified": email_verified,
         }
 
         return await UserService.create(db_session, user_data, mock_email_service)
@@ -282,13 +312,6 @@ async def create_user(db_session):
 
 @pytest.fixture(scope="session", autouse=True)
 def apply_migrations():
+    """Migrate alembic"""
     alembic_cfg = Config("alembic.ini")  # or your actual path
     command.upgrade(alembic_cfg, "head")
-
-
-@pytest.fixture(scope="session", autouse=True)
-def apply_migrations():
-    # Construct full path to your alembic.ini
-    alembic_cfg = Config("alembic.ini")
-    command.upgrade(alembic_cfg, "head")
-

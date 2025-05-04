@@ -1,8 +1,9 @@
-# app/security.py
-from builtins import Exception, ValueError, bool, int, str
+"""Security of passwords in user app"""
 import secrets
-import bcrypt
+from builtins import Exception, ValueError, bool, int, str
 from logging import getLogger
+
+import bcrypt
 
 # Set up logging
 logger = getLogger(__name__)
@@ -23,11 +24,12 @@ def hash_password(password: str, rounds: int = 12) -> str:
     """
     try:
         salt = bcrypt.gensalt(rounds=rounds)
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-        return hashed_password.decode('utf-8')
+        hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt)
+        return hashed_password.decode("utf-8")
     except Exception as e:
         logger.error("Failed to hash password: %s", e)
         raise ValueError("Failed to hash password") from e
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
@@ -44,10 +46,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         ValueError: If the hashed password format is incorrect or the function fails to verify.
     """
     try:
-        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+        )
     except Exception as e:
         logger.error("Error verifying password: %s", e)
-        raise ValueError("Authentication process encountered an unexpected error") from e
+        raise ValueError(
+            "Authentication process encountered an unexpected error"
+        ) from e
+
 
 def generate_verification_token():
+    """Verify token"""
     return secrets.token_urlsafe(16)  # Generates a secure 16-byte URL-safe token

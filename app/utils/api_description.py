@@ -1,4 +1,6 @@
+"""Description declaration"""
 def getDescription():
+    """Get description function"""
     description = """
 Application Overview:
 

@@ -1,12 +1,17 @@
-# smtp_client.py
-from builtins import Exception, int, str
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from settings.config import settings
+"""Client app for email routing"""
+# pylint: disable=logging-fstring-interpolation
+
 import logging
+import smtplib
+from builtins import Exception, int, str
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+from settings.config import settings
+
 
 class SMTPClient:
+    """SMTP Client declaration"""
     def __init__(self, server: str, port: int, username: str, password: str):
         self.server = server
         self.port = port
@@ -14,12 +19,13 @@ class SMTPClient:
         self.password = password
 
     def send_email(self, subject: str, html_content: str, recipient: str):
+        """Auto send email"""
         try:
-            message = MIMEMultipart('alternative')
-            message['Subject'] = subject
-            message['From'] = self.username
-            message['To'] = recipient
-            message.attach(MIMEText(html_content, 'html'))
+            message = MIMEMultipart("alternative")
+            message["Subject"] = subject
+            message["From"] = self.username
+            message["To"] = recipient
+            message.attach(MIMEText(html_content, "html"))
 
             with smtplib.SMTP(self.server, self.port) as server:
                 server.starttls()  # Use TLS
