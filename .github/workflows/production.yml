@@ -86,7 +86,6 @@ jobs:
           push: true
           tags: mikeygman11/user_management:${{ github.sha }}
           platforms: linux/amd64,linux/arm64
-          cache-from: type=registry,ref=mikeygman11/user_management:cache
           cache-to: type=inline
 
       - name: Scan Docker image
