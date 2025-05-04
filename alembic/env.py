@@ -19,8 +19,10 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 # Override DB URL with env variable if available
-db_url = getenv("DATABASE_URL", config.get_main_option("sqlalchemy.url"))
+raw_url = getenv("DATABASE_URL", config.get_main_option("sqlalchemy.url"))
+db_url = raw_url.replace("postgresql+psycopg2", "postgresql+asyncpg").replace("postgresql://", "postgresql+asyncpg://")
 config.set_main_option("sqlalchemy.url", db_url)
+
 
 def run_migrations_offline():
     """Run migrations in offline mode."""
