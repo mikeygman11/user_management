@@ -219,26 +219,35 @@ class UserService:
 
     @classmethod
     async def update_role(cls, session: AsyncSession, user_id: UUID, new_role: UserRole, changed_by: UUID) -> Optional[User]:
-        user = await cls.get_by_id(session, user_id)
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+        try:
+            logger.info(f"Updating role for user_id={user_id} to {new_role}, changed_by={changed_by}")
+            user = await cls.get_by_id(session, user_id)
+            if not user:
+                logger.warning(f"User {user_id} not found.")
+                return None
 
-        old_role = user.role
-        if old_role == new_role:
-            return user  # No change needed
+            old_role = user.role
+            if old_role == new_role:
+                logger.info(f"Role is already {new_role}, no change.")
+                return user  # No change needed
 
-        user.role = new_role
-        session.add(user)
+            user.role = new_role
+            session.add(user)
 
-        # Add role change log
-        log = RoleChangeLog(
-            target_user_id=user_id,
-            changed_by=changed_by,
-            old_role=old_role.value,
-            new_role=new_role.value,
-        )
-        session.add(log)
+            # Log role change
+            log = RoleChangeLog(
+                target_user_id=user_id,
+                changed_by=changed_by,
+                old_role=old_role.value,
+                new_role=new_role.value,
+            )
+            session.add(log)
 
-        await session.commit()
-        await session.refresh(user)
-        return user
+            await session.commit()
+            await session.refresh(user)
+            logger.info(f"Role updated successfully for user_id={user_id}")
+            return user
+        except Exception as e:
+            logger.exception(f"Failed to update role: {e}")
+            await session.rollback()
+            raise
