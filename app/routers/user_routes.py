@@ -230,7 +230,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Async
         access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
 
         access_token = create_access_token(
-            data={"sub": user.email, "role": str(user.role.name)},
+            data={"sub": user.email, "role": str(user.role.name)}, #had to resolve access token issue - mismatch between user.email and user.id
             expires_delta=access_token_expires
         )
 
