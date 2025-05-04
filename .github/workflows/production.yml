@@ -57,7 +57,7 @@ jobs:
         run: alembic upgrade head
 
       - name: Run pylint
-        run: pylint app tests
+        run: pylint --fail-under=8.0 app tests
 
       - name: Run tests with coverage
         run: pytest --cov=app --cov-report=term-missing
