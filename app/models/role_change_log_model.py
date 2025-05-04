@@ -6,7 +6,7 @@ from app.database import Base
 from uuid import uuid4
 
 class RoleChangeLog(Base):
-    __tablename__ = "role_change_logs"
+    __tablename__ = "role_change_logs" #had to create UUID and match them with the new endpoint
 
     id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
     changed_by = Column(UUID(as_uuid=True), nullable=False)
