@@ -36,6 +36,12 @@ from app.utils.security import hash_password
 from app.utils.template_manager import TemplateManager
 from app.services.email_service import EmailService
 from app.services.jwt_service import create_access_token
+from app.services.user_service import UserService
+from unittest.mock import AsyncMock
+from alembic.config import Config
+from alembic import command
+from pathlib import Path
+import os
 
 fake = Faker()
 
@@ -238,3 +244,43 @@ def email_service():
         mock_service.send_verification_email.return_value = None
         mock_service.send_user_email.return_value = None
         return mock_service
+    
+
+@pytest.fixture
+async def create_user(db_session):
+    async def _create_user(
+        email: str = "test@example.com",
+        password: str = "SecurePass123!",
+        nickname: str = "testuser",
+        role: UserRole = UserRole.AUTHENTICATED,
+        email_verified: bool = True
+    ):
+        # Mock the email service with no-op behavior
+        mock_email_service = AsyncMock()
+        mock_email_service.send_verification_email = AsyncMock(return_value=None)
+
+        user_data = {
+            "email": email,
+            "password": password,
+            "nickname": nickname,
+            "role": role,
+            "email_verified": email_verified
+        }
+
+        return await UserService.create(db_session, user_data, mock_email_service)
+
+    return _create_user
+
+
+@pytest.fixture(scope="session", autouse=True)
+def apply_migrations():
+    alembic_cfg = Config("alembic.ini")  # or your actual path
+    command.upgrade(alembic_cfg, "head")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def apply_migrations():
+    # Construct full path to your alembic.ini
+    alembic_cfg = Config("alembic.ini")
+    command.upgrade(alembic_cfg, "head")
+

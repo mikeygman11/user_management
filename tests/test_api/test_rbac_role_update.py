@@ -49,3 +49,58 @@ async def test_update_user_role_invalid_role(admin_token, create_user, async_cli
     )
     assert res.status_code == 400
     assert res.json()["detail"] == "Invalid role name"
+
+@pytest.mark.asyncio
+async def test_admin_updates_nonexistent_user_role(admin_token, async_client: AsyncClient):
+    fake_user_id = "11111111-1111-1111-1111-111111111111"  # guaranteed to not exist
+    res = await async_client.put(
+        f"/users/{fake_user_id}/role",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"new_role": "MANAGER"}
+    )
+    assert res.status_code == 404
+    assert res.json()["detail"] == "User not found"
+
+
+@pytest.mark.asyncio
+async def test_unauthenticated_user_cannot_update_role(create_user, async_client: AsyncClient):
+    user = await create_user(role=UserRole.AUTHENTICATED)
+    res = await async_client.put(
+        f"/users/{user.id}/role",
+        headers={"Authorization": "Bearer invalid.token.here"},
+        json={"new_role": "MANAGER"}
+    )
+    assert res.status_code == 401
+    assert res.json()["detail"] in ["Could not validate credentials", "Not authenticated"]
+
+@pytest.mark.asyncio
+async def test_manager_cannot_update_user_role(manager_token, create_user, async_client: AsyncClient):
+    user = await create_user(role=UserRole.AUTHENTICATED)
+    res = await async_client.put(
+        f"/users/{user.id}/role",
+        headers={"Authorization": f"Bearer {manager_token}"},
+        json={"new_role": "ADMIN"}
+    )
+    assert res.status_code == 403
+    assert res.json()["detail"] in ["Permission denied", "Operation not permitted"]
+
+@pytest.mark.asyncio
+async def test_admin_assigns_same_role(admin_token, create_user, async_client: AsyncClient):
+    user = await create_user(role=UserRole.MANAGER)
+    res = await async_client.put(
+        f"/users/{user.id}/role",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"new_role": "MANAGER"}
+    )
+    assert res.status_code == 200
+    assert "User role updated to MANAGER" in res.json()["message"]
+
+@pytest.mark.asyncio
+async def test_update_user_role_missing_auth(create_user, async_client: AsyncClient):
+    user = await create_user(role=UserRole.AUTHENTICATED)
+    res = await async_client.put(
+        f"/users/{user.id}/role",
+        json={"new_role": "ADMIN"}  # No auth header
+    )
+    assert res.status_code == 401
+    assert res.json()["detail"] in ["Not authenticated", "Not authenticated"] #9 tests in this file added

@@ -271,7 +271,7 @@ async def update_user_role(
         raise HTTPException(status_code=400, detail="Invalid user_id format in token")
 
     if str(user_id) == str(changed_by_uuid):
-        raise HTTPException(status_code=400, detail="Admins cannot change their own role") #adding conditions on admins changing own permissions
+        raise HTTPException(status_code=400, detail="Admins cannot change their own role")
 
     updated_user = await UserService.update_role(
         db, user_id=user_id, new_role=role_enum, changed_by=changed_by_uuid
