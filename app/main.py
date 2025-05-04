@@ -20,6 +20,7 @@ app = FastAPI(
 # CORS middleware configuration
 # This middleware will enable CORS and allow requests from any origin
 # It can be configured to allow specific methods, headers, and origins
+# triggering Github actions
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # List of origins that are allowed to access the server, ["*"] allows all
