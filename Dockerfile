@@ -1,5 +1,5 @@
 # Define a base stage with a Debian Bookworm base image
-FROM python:3.12-bookworm as base
+FROM python:3.12-bookworm AS base
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -27,7 +27,7 @@ RUN python -m venv /.venv \
     && pip install -r requirements.txt
 
 # Define a second stage for the runtime
-FROM python:3.12-slim-bookworm as final
+FROM python:3.12-slim-bookworm AS final
 
 # Install libc-bin (no version pinning)
 RUN apt-get update && apt-get install -y libc-bin \
