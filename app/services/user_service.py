@@ -15,6 +15,7 @@ from uuid import UUID
 from app.services.email_service import EmailService
 from app.models.user_model import UserRole
 import logging
+from app.models.role_change_log_model import RoleChangeLog
 from fastapi import HTTPException, status
 
 settings = get_settings()
@@ -221,10 +222,23 @@ class UserService:
         user = await cls.get_by_id(session, user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
-        
-        # Optionally log the role change for audit purposes (you can expand this later)
+
+        old_role = user.role
+        if old_role == new_role:
+            return user  # No change needed
+
         user.role = new_role
         session.add(user)
+
+        # Add role change log
+        log = RoleChangeLog(
+            target_user_id=user_id,
+            changed_by=changed_by,
+            old_role=old_role.value,
+            new_role=new_role.value,
+        )
+        session.add(log)
+
         await session.commit()
         await session.refresh(user)
         return user

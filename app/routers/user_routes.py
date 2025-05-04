@@ -35,6 +35,9 @@ from app.dependencies import get_settings
 from app.services.email_service import EmailService
 from app.models.user_model import UserRole
 from app.services.user_service import UserService
+import logging
+
+logger = logging.getLogger(__name__)
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 settings = get_settings()
@@ -211,10 +214,9 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Async
         access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
 
         access_token = create_access_token(
-            data={"sub": user.email, "role": str(user.role.name)},
+            data={"sub": str(user.id), "role": user.role.name},
             expires_delta=access_token_expires
         )
-
         return {"access_token": access_token, "token_type": "bearer"}
     raise HTTPException(status_code=401, detail="Incorrect email or password.")
 
@@ -256,16 +258,23 @@ async def update_user_role(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_role(["ADMIN"]))
 ):
+    logger.info(f"Current user object: {current_user}")
+
     try:
         role_enum = UserRole[new_role.upper()]
     except KeyError:
         raise HTTPException(status_code=400, detail="Invalid role name")
 
-    if str(user_id) == current_user["user_id"]:
+    try:
+        changed_by_uuid = UUID(current_user["user_id"])
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid user_id format in token")
+
+    if str(user_id) == str(changed_by_uuid):
         raise HTTPException(status_code=400, detail="Admins cannot change their own role")
 
     updated_user = await UserService.update_role(
-        db, user_id=user_id, new_role=role_enum, changed_by=UUID(current_user["user_id"])
+        db, user_id=user_id, new_role=role_enum, changed_by=changed_by_uuid
     )
 
     if not updated_user:
