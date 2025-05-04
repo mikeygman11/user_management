@@ -1,6 +1,6 @@
+"""Random gen nicknames"""
 from builtins import str
 import random
-
 
 def generate_nickname() -> str:
     """Generate a URL-safe nickname using adjectives and animal names."""

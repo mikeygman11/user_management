@@ -1,7 +1,10 @@
+"""
+Defines the token schema for the model
+"""
 from builtins import str
 from pydantic import BaseModel
 
-class TokenResponse(BaseModel):
+class TokenResponse(BaseModel): #defines response of tokens for auth
     access_token: str
     token_type: str = "bearer"
 

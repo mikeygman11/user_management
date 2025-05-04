@@ -7,6 +7,7 @@ from settings.config import settings
 import logging
 
 class SMTPClient:
+    """Defining procedure for SMTP mail client"""
     def __init__(self, server: str, port: int, username: str, password: str):
         self.server = server
         self.port = port
@@ -14,6 +15,7 @@ class SMTPClient:
         self.password = password
 
     def send_email(self, subject: str, html_content: str, recipient: str):
+        """Defining auto email generation"""
         try:
             message = MIMEMultipart('alternative')
             message['Subject'] = subject

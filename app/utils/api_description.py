@@ -1,4 +1,6 @@
+"""Get Description"""
 def getDescription():
+    """Method to get description"""
     description = """
 Application Overview:
 

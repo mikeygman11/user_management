@@ -7,8 +7,8 @@ from fastapi import Request
 from app.schemas.link_schema import Link
 from app.schemas.pagination_schema import PaginationLink
 
-# Utility function to create a link
 def create_link(rel: str, href: str, method: str = "GET", action: str = None) -> Link:
+    # Utility function to create a link
     return Link(rel=rel, href=href, method=method, action=action)
 
 def create_pagination_link(rel: str, base_url: str, params: dict) -> PaginationLink:
@@ -31,6 +31,7 @@ def create_user_links(user_id: UUID, request: Request) -> List[Link]:
     ]
 
 def generate_pagination_links(request: Request, skip: int, limit: int, total_items: int) -> List[PaginationLink]:
+    """Create pagination link"""
     base_url = str(request.url)
     total_pages = (total_items + limit - 1) // limit
     links = [

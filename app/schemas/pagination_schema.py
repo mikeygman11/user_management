@@ -1,11 +1,13 @@
-import re
-from datetime import datetime
-from typing import List, Optional
-from uuid import UUID
-from pydantic import BaseModel, EmailStr, Field, HttpUrl, validator, conint
+"""
+Defines the pagination models used for API responses including page info
+and hypermedia links for HATEOAS-style navigation.
+"""
 
-# Pagination Model
+from typing import List
+from pydantic import BaseModel, Field, HttpUrl
+
 class Pagination(BaseModel):
+    """Basic pagination information."""
     page: int = Field(..., description="Current page number.")
     per_page: int = Field(..., description="Number of items per page.")
     total_items: int = Field(..., description="Total number of items.")
@@ -21,15 +23,16 @@ class Pagination(BaseModel):
             }
         }
 
-
-
 class PaginationLink(BaseModel):
+    """Defines a navigational pagination link."""
     rel: str
     href: HttpUrl
     method: str = "GET"
 
 class EnhancedPagination(Pagination):
+    """Extends basic pagination to include HATEOAS links."""
     links: List[PaginationLink] = []
 
     def add_link(self, rel: str, href: str):
+        """Appends a link to the pagination."""
         self.links.append(PaginationLink(rel=rel, href=href))

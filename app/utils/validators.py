@@ -1,3 +1,4 @@
+"""Validate email procedure function"""
 from builtins import bool, str
 from email_validator import validate_email, EmailNotValidError
 

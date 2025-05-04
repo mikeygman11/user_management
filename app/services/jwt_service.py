@@ -1,10 +1,11 @@
-# app/services/jwt_service.py
+"""Declaring how to keep jwt/tokenizing in line"""
 from builtins import dict, str
 import jwt
 from datetime import datetime, timedelta
 from settings.config import settings
 
 def create_access_token(*, data: dict, expires_delta: timedelta = None):
+    """creating access token"""
     to_encode = data.copy()
     # Convert role to uppercase before encoding the JWT
     if 'role' in to_encode:
@@ -15,6 +16,7 @@ def create_access_token(*, data: dict, expires_delta: timedelta = None):
     return encoded_jwt
 
 def decode_token(token: str):
+    """Decode token method"""
     try:
         decoded = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
         return decoded

@@ -1,6 +1,11 @@
+"""
+Schema for hypermedia link objects used in HATEOAS responses.
+"""
+
 from pydantic import BaseModel, Field, HttpUrl
 
 class Link(BaseModel):
+    """Defines a hypermedia link for API responses."""
     rel: str = Field(..., description="Relation type of the link.")
     href: HttpUrl = Field(..., description="The URL of the link.")
     action: str = Field(..., description="HTTP method for the action this link represents.")
