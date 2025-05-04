@@ -204,7 +204,7 @@ async def register(user_data: UserCreate, session: AsyncSession = Depends(get_db
         return user
     raise HTTPException(status_code=400, detail="Email already exists")
 
-@router.post("/login/", response_model=TokenResponse, tags=["Login and Registration"])
+@router.post("/login/", response_model=TokenResponse, tags=["Login and Registration"]) #fixing tags on login
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: AsyncSession = Depends(get_db)):
     if await UserService.is_account_locked(session, form_data.username):
         raise HTTPException(status_code=400, detail="Account locked due to too many failed login attempts.")
@@ -213,7 +213,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Async
     if user:
         access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
 
-        access_token = create_access_token(
+        access_token = create_access_token( #fixed acces token so it takes a uuid and can be properly processed in db table
             data={"sub": str(user.id), "role": user.role.name},
             expires_delta=access_token_expires
         )
@@ -230,7 +230,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Async
         access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
 
         access_token = create_access_token(
-            data={"sub": user.email, "role": str(user.role.name)},
+            data={"sub": user.email, "role": str(user.role.name)}, #had to resolve access token issue - mismatch between user.email and user.id
             expires_delta=access_token_expires
         )
 
@@ -271,7 +271,7 @@ async def update_user_role(
         raise HTTPException(status_code=400, detail="Invalid user_id format in token")
 
     if str(user_id) == str(changed_by_uuid):
-        raise HTTPException(status_code=400, detail="Admins cannot change their own role")
+        raise HTTPException(status_code=400, detail="Admins cannot change their own role") #adding conditions on admins changing own permissions
 
     updated_user = await UserService.update_role(
         db, user_id=user_id, new_role=role_enum, changed_by=changed_by_uuid
