@@ -60,26 +60,34 @@ This involved creating a new endpoint for /users/role which changes their roles.
 
 During development and QA, the following issues were identified and have now been resolved:
 
-- [Issue #1: Failing tests related to RBAC in pytest](https://github.com/mikeygman11/user-management-system/issues/1)  
+- [Issue #1: Failing tests related to RBAC in pytest](https://github.com/mikeygman11/user-management/issues/1)  
   **Resolution:** Updated the pytest fixtures and fixed the role-check logic in the service layer so that all RBAC tests now pass.
 
-- [Issue #3: Verification of email is not working – link is generating an error](https://github.com/mikeygman11/user-management-system/issues/3)  
+- [Issue #3: Verification of email is not working – link is generating an error](https://github.com/mikeygman11/user-management/issues/3)  
   **Resolution:** Corrected the URL generation in the email verification service, improved error handling in the verification endpoint, and added unit tests to cover failure scenarios.
 
-- [Issue #5: Authentication overrides Admin privileges – should not override an Admin or Manager (only basic user)](https://github.com/mikeygman11/user-management-system/issues/5)  
+- [Issue #5: Authentication overrides Admin privileges – should not override an Admin or Manager (only basic user)](https://github.com/mikeygman11/user-management/issues/5)  
   **Resolution:** Hardened the permission checks so that only basic users can be overridden, and prevented Admin/Manager roles from being downgraded via the standard auth flow.
 
-- [Issue #7: Implement logging for user role changes](https://github.com/mikeygman11/user-management-system/issues/7)  
+- [Issue #7: Implement logging for user role changes](https://github.com/mikeygman11/user-management/issues/7)  
   **Resolution:** Added a `RoleChangeLog` model, hooked it into the `UserService.change_role()` method, and verified that every role change is recorded with actor, timestamp, old role, and new role.
 
-- [Issue #8: Admin updates not processing](https://github.com/mikeygman11/user-management-system/issues/8)  
+- [Issue #8: Admin updates not processing](https://github.com/mikeygman11/user-management/issues/8)  
   **Resolution:** Fixed a missing dependency injection in the admin role-update endpoint and added an integration test to ensure the update flow works end-to-end.
 
-- [Issue #11: Need to add more unit tests for the role change table and the new admin role-update endpoint](https://github.com/mikeygman11/user-management-system/issues/11)  
+- [Issue #11: Need to add more unit tests for the role change table and the new admin role-update endpoint](https://github.com/mikeygman11/user-management/issues/11)  
   **Resolution:** Wrote 10+ new pytest unit and integration tests covering the role-change table operations and protected admin endpoints under both normal and error conditions.
 
-- [Issue #12: Fix bug where alembic does not insert role changes into db](https://github.com/mikeygman11/user-management-system/issues/12)  
+- [Issue #12: Fix bug where alembic does not insert role changes into db](https://github.com/mikeygman11/user-management/issues/12)  
   **Resolution:** Corrected the Alembic migration script to create the `role_change_logs` table properly and added a post-migration check test to prevent regressions.
+
+  Additional Tests
+
+  I created over 10 new tests in two different files to make sure my functions work properly.
+
+- [Test RBAC: admins being able to access endpoints they need](https://github.com/mikeygman11/user_management/blob/main/tests/test_user_role_management.py)  
+- [Test RBAC: role updates propagating](https://github.com/mikeygman11/user_management/blob/main/tests/test_api/test_rbac_role_update.py)  
+- [General testing additions](https://github.com/mikeygman11/user_management/blob/main/tests/conftest.py)  
 
 ---
 
