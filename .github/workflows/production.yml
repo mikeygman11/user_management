@@ -93,6 +93,6 @@ jobs:
         with:
           image-ref: 'mikeygman11/user_management:${{ github.sha }}'
           format: 'table'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'

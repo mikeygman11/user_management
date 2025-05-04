@@ -1,53 +1,85 @@
+# User Management System Final Project
+# Michael Galanaugh IS 601 Final Project
 
+## Introduction
 
-# The User Management System Final Project: Your Epic Coding Adventure Awaits! 🎉✨🔥
+As part of my fork of the professor's repo, I decided to implement RBAC for admins. This project demonstrates a complete user CRUD system with authentication, authorization, role-based access control (RBAC), audit logging, automated testing, and Docker-based deployment.
 
-## Introduction: Buckle Up for the Ride of a Lifetime 🚀🎬
+## Project Overview & Objectives
 
-Welcome to the User Management System project - an epic open-source adventure crafted by the legendary Professor Keith Williams for his rockstar students at NJIT! 🏫👨‍🏫⭐ This project is your gateway to coding glory, providing a bulletproof foundation for a user management system that will blow your mind! 🤯 You'll bridge the gap between the realms of seasoned software pros and aspiring student developers like yourselves. 
+- **Practical Experience**  
+  Work with a real-world codebase, collaborate via GitHub issues and pull requests, and practice professional workflows.
 
-### [Instructor Video - Project Overview and Tips](https://youtu.be/gairLNAp6mA) 🎥
+- **Quality Assurance**  
+  Identify and resolve bugs, write thorough unit and integration tests, and enforce code quality with linters.
 
-- [Introduction to the system features and overview of the project - please read](system_documentation.md) 📚
-- [Project Setup Instructions](setup.md) ⚒️
-- [Features to Select From](features.md) 🛠️
-- [About the Project](about.md)🔥🌟
+- **Test Coverage**  
+  Achieve necessary coverage by adding tests for edge cases, error scenarios, and new functionality. Passing all tests via Pytest with 100% accuracy.
 
-## Goals and Objectives: Unlock Your Coding Superpowers 🎯🏆🌟
+- **Feature Implementation**  
+  Design, build, and document a new feature—RBAC Enhancements—to dynamically change user roles and record audit logs.
 
-Get ready to ascend to new heights with this legendary project:
+- **Industry Readiness**  
+  Use Docker, GitHub Actions CI/CD, Alembic migrations, and best practices for dependency management and configuration.
 
-1. **Practical Experience**: Dive headfirst into a real-world codebase, collaborate with your teammates, and contribute to an open-source project like a seasoned pro! 💻👩‍💻🔥
-2. **Quality Assurance**: Develop ninja-level skills in identifying and resolving bugs, ensuring your code quality and reliability are out of this world. 🐞🔍⚡
-3. **Test Coverage**: Write additional tests to cover edge cases, error scenarios, and important functionalities - leave no stone unturned and no bug left behind! ✅🧪🕵️‍♂️
-4. **Feature Implementation**: Implement a brand new, mind-blowing feature and make your epic mark on the project, following best practices for coding, testing, and documentation like a true artisan. ✨🚀🎆
-5. **Collaboration**: Foster teamwork and collaboration through code reviews, issue tracking, and adhering to contribution guidelines - teamwork makes the dream work, and together you'll conquer worlds! 🤝💪🌍
-6. **Industry Readiness**: Prepare for the software industry by working on a project that simulates real-world development scenarios - level up your skills to super hero status  and become an unstoppable coding force! 🔝🚀🏆⚡
+## Setup Instructions
 
-## Submission and Grading: Your Chance to Shine 📝✏️📈
+1. **Clone the repository**  
+   ```bash
+   git clone https://github.com/mikeygman11/user-management-system.git
+   cd user-management-system
 
-1. **Reflection Document**: Submit a 1-2 page Word document reflecting on your learnings throughout the course and your experience working on this epic project. Include links to the closed issues for the **5 QA issues, 10 NEW tests, and 1 Feature** you'll be graded on. Make sure your project successfully deploys to DockerHub and include a link to your Docker repository in the document - let your work speak for itself! 📄🔗💥
+2. **Create Virtual Environment**
 
-2. **Commit History**: Show off your consistent hard work through your commit history like a true coding warrior. **Projects with less than 10 commits will get an automatic 0 - ouch!** 😬⚠️ A significant part of your project's evaluation will be based on your use of issues, commits, and following a professional development process like a boss - prove your coding prowess! 💻🔄🔥
+    ```bash
+    python3.10 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
 
-3. **Deployability**: Broken projects that don't deploy to Dockerhub or pass all the automated tests on GitHub actions will face point deductions - nobody likes a buggy app! 🐞☠️ Show the world your flawless coding skills!
+3. **Alembic and PyTest**
+When you run Pytest, it deletes the user table but doesn't remove the Alembic table. This can cause Alembic to get out of sync.
+To resolve this, drop the Alembic table and run the migration (docker compose exec fastapi alembic upgrade head) when you want to manually test the site through http://localhost/docs.
+If you change the database schema, delete the Alembic migration, the Alembic table, and the users table. Then, regenerate the migration using the command: docker compose exec fastapi alembic revision --autogenerate -m 'initial migration'.
+Since there is no real user data currently, you don't need to worry about database upgrades, but Alembic is still required to install the database tables.
 
-## Managing the Project Workload: Stay Focused, Stay Victorious ⏱️🧠⚡
+4. **Run Project**
 
-This project requires effective time management and a well-planned strategy, but fear not - you've got this! Follow these steps to ensure a successful (and sane!) project outcome:
+Run the project:
+docker compose up --build
+Set up PGAdmin at localhost:5050 (see docker compose for login details)
+View logs for the app: docker compose logs fastapi -f
+Run tests: docker compose exec fastapi pytest
 
-1. **Select a Feature**: [Choose a feature](features.md) from the provided list of additional improvements that sparks your interest and aligns with your goals like a laser beam. ✨⭐🎯 This is your chance to shine!
+5. **Dockerhub**
+Set up the project with DockerHub deployment as in previous assignments for email testing. Enable issues in settings, create the production environment, and configure your DockerHub username and token. You don't need to add MailTrap, but if you want to, you can add the values to the production environment's variables.
 
-2. **Quality Assurance (QA)**: Thoroughly test the system's major functionalities related to your chosen feature and identify at least 5 issues or bugs like a true detective. Create GitHub issues for each identified problem, providing detailed descriptions and steps to reproduce - the more detail, the merrier! 🔍🐞🕵️‍♀️ Leave no stone unturned!
+## Chosen Feature
 
-3. **Test Coverage Improvement**: Review the existing test suite and identify gaps in test coverage like a pro. Create 10 additional tests to cover edge cases, error scenarios, and important functionalities related to your chosen feature. Focus on areas such as user registration, login, authorization, and database interactions. Simulate the setup of the system as the admin user, then creating users, and updating user accounts - leave no stone unturned, no bug left behind! ✅🧪🔍🔬 Become the master of testing!
+I chose to implement RBAC as a part of my project. My feature enables admins to perform and CRUD operations with other users in the system.
+This involved creating a new endpoint for /users/role which changes their roles. Also, this involved changes to the existing functionality.
 
-4. **New Feature Implementation**: Implement your chosen feature, following the project's coding practices and architecture like a coding ninja. Write appropriate tests to ensure your new feature is functional and reliable like a rock. Document the new feature, including its usage, configuration, and any necessary migrations - future you will thank you profusely! 🚀✨📝👩‍💻⚡ Make your mark on this project!
+During development and QA, the following issues were identified and have now been resolved:
 
-5. **Maintain a Working Main Branch**: Throughout the project, ensure you always have a working main branch deploying to Docker like a well-oiled machine. This will prevent any last-minute headaches and ensure a smooth submission process - no tears allowed, only triumphs! 😊🚢⚓ Stay focused, stay victorious!
+- [Issue #1: Failing tests related to RBAC in pytest](https://github.com/mikeygman11/user-management-system/issues/1)  
+  **Resolution:** Updated the pytest fixtures and fixed the role-check logic in the service layer so that all RBAC tests now pass.
 
-Remember, it's more important to make something work reliably and be reasonably complete than to implement an overly complex feature. Focus on creating a feature that you can build upon or demonstrate in an interview setting - show off your skills like a rockstar! 💪🚀🎓
+- [Issue #3: Verification of email is not working – link is generating an error](https://github.com/mikeygman11/user-management-system/issues/3)  
+  **Resolution:** Corrected the URL generation in the email verification service, improved error handling in the verification endpoint, and added unit tests to cover failure scenarios.
 
-Don't forget to always have a working main branch deploying to Docker at all times. If you always have a working main branch, you will never be in jeopardy of receiving a very disappointing grade :-). Keep that main branch shining bright!
+- [Issue #5: Authentication overrides Admin privileges – should not override an Admin or Manager (only basic user)](https://github.com/mikeygman11/user-management-system/issues/5)  
+  **Resolution:** Hardened the permission checks so that only basic users can be overridden, and prevented Admin/Manager roles from being downgraded via the standard auth flow.
 
-Let's embark on this epic coding adventure together and conquer the world of software engineering! You've got this, coding rockstars! 🚀🌟✨
+- [Issue #7: Implement logging for user role changes](https://github.com/mikeygman11/user-management-system/issues/7)  
+  **Resolution:** Added a `RoleChangeLog` model, hooked it into the `UserService.change_role()` method, and verified that every role change is recorded with actor, timestamp, old role, and new role.
+
+- [Issue #8: Admin updates not processing](https://github.com/mikeygman11/user-management-system/issues/8)  
+  **Resolution:** Fixed a missing dependency injection in the admin role-update endpoint and added an integration test to ensure the update flow works end-to-end.
+
+- [Issue #11: Need to add more unit tests for the role change table and the new admin role-update endpoint](https://github.com/mikeygman11/user-management-system/issues/11)  
+  **Resolution:** Wrote 10+ new pytest unit and integration tests covering the role-change table operations and protected admin endpoints under both normal and error conditions.
+
+- [Issue #12: Fix bug where alembic does not insert role changes into db](https://github.com/mikeygman11/user-management-system/issues/12)  
+  **Resolution:** Corrected the Alembic migration script to create the `role_change_logs` table properly and added a post-migration check test to prevent regressions.
+
+---
+
