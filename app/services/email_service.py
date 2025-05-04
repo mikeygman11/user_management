@@ -8,7 +8,7 @@ from settings.config import settings
 
 
 class EmailService:
-    """Email service implementation"""
+    """Email service implementation - update"""
     def __init__(self, template_manager: TemplateManager):
         self.smtp_client = SMTPClient(
             server=settings.smtp_server,
